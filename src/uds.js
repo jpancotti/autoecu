@@ -283,7 +283,7 @@ export const lookup = (e, v) => {
 }
 
 export class UdsClient {
-  constructor(panda, timeout=10, debug=false) {
+  constructor(panda, timeout=10, debug=true) {
     this.panda = panda
     this.debug = debug
     this.timeout = timeout
@@ -291,7 +291,7 @@ export class UdsClient {
     this.rx_queue = []
     this.panda.onMessage(this._isotp_response)
   }
-  
+
   init = async (tx_addr, rx_addr=undefined, bus=0) => {
     var id = Math.random()
     this.tx_queue.push(id)
@@ -316,7 +316,7 @@ export class UdsClient {
           throw new Error(`invalid tx_addr: ${tx_addr}`)
         }
       }
-  
+
       // forgot to implement can clear in pandajs ?!?
       await this.panda.vendorWrite(`CAN clear: TX ${this.bus}`, {request: 0xF1, value: this.bus, index: 0});
       await this.panda.vendorWrite('CAN clear: RX', {request: 0xF1, value: 0xFFFF, index: 0});
@@ -464,7 +464,7 @@ export class UdsClient {
           }
           await sleep(10)
         }
-            
+
         if (resp === undefined) {
           throw new MessageTimeoutError("timeout waiting for response")
         }
@@ -712,7 +712,7 @@ export class UdsClient {
           let b = (s.memory_address>>((memory_address_bytes-i-1)*8)) & 0xFF
           data.writeUInt8(b, start_idx+i)
         }
-    
+
         if (s.memory_size >= Math.pow(2, memory_size_bytes*8)) {
           throw new Error(`invalid memory_size: ${s.memory_size}`)
         }
@@ -812,7 +812,7 @@ export class UdsClient {
       dtc_report_type === DTC_REPORT_TYPE.DTC_BY_SEVERITY_MASK_RECORD) {
       data = Buffer.concat([data, Buffer.from([dtc_severity_mask_type]), Buffer.from([dtc_status_mask_type])])
     }
-    
+
     var resp = await this._uds_request(SERVICE_TYPE.READ_DTC_INFORMATION, dtc_report_type, data)
 
     // TODO: parse response
@@ -932,7 +932,7 @@ export class UdsClient {
     var buf = Buffer.alloc(1+data.byteLength)
     buf.writeUInt8(block_sequence_count)
     data.copy(buf, 1)
-    
+
     var resp = await this._uds_request(SERVICE_TYPE.TRANSFER_DATA, undefined, buf)
     var resp_id = resp.byteLength > 0 ? resp[0] : undefined
     if (resp_id !== block_sequence_count) {
